@@ -81,7 +81,7 @@ module.exports.updateHisaabController = async function(req,res){
         req.flash("error2","hisaab not found")
         return res.redirect(`/profile`)
     }
-    let newExpense = hisaab.total - req.body.total
+    let oldExpense = hisaab.total  
     hisaab.title = req.body.title;
     hisaab.total = req.body.total;
     hisaab.description = req.body.description;
@@ -89,8 +89,12 @@ module.exports.updateHisaabController = async function(req,res){
     hisaab.shareable = req.body.shareable === "on"? true : false;
     hisaab.editable = req.body.editable === "on"? true : false;
     hisaab.important = req.body.important === "on"? true : false;
-    let user = hisaab.user;
-    user.total = user.total + newExpense;
+    // console.log(hisaab.user);
+    
+    let user = await userModel.findOne({_id:hisaab.user});
+    let t = user.total - oldExpense
+    user.total = t + hisaab.total
+
     await user.save();
     await hisaab.save();
     res.redirect(`/hisaab/view/${req.params.id}`)
