@@ -1,0 +1,24 @@
+<script>
+    // Function to hide the error div after a specified time
+    function hideErrorDiv() {
+        document.getElementById("errorDiv").style.display = "none";
+    }
+
+    // Set a timeout to hide the error div after 3 seconds (3000 milliseconds)
+    setTimeout(hideErrorDiv, 3000);
+
+
+    document.querySelector('#passwordBox').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        document.querySelector('#passwordBoxInput').classList.remove("hidden");
+    } else {
+        document.querySelector('#passwordBoxInput').classList.add("hidden");
+    }
+});
+
+
+</script>
+
+</body>
+
+</html>

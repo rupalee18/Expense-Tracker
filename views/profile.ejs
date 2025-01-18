@@ -1,0 +1,170 @@
+<%- include('./partials/header.ejs') %>
+<div class="w-full px-4 py-6 md:px-20 md:py-10"> 
+    <div id="changePhoto" class="h-full w-full backdrop-blur-md z-10 absolute rounded-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center justify-center hidden">
+        <form id="profileForm" class="h-auto w-11/12 md:w-96 bg-zinc-400 flex flex-col justify-evenly items-center p-4 rounded-md relative" action="/profilePicture" method="post" enctype="multipart/form-data">
+            <i id="close" class="ri-close-large-line top-1 right-2 absolute"></i>
+            <label for="image" class="circle h-40 w-40 md:h-60 md:w-60 aspect-square bg-gray-300 rounded-full overflow-hidden">
+                <% if (profilePictureBase64 === "") { %>
+                    <img id="imagePreview" src="/images/default_profile_pic.jpg" class="h-full w-full object-cover" alt="">
+                <% } else { %>
+                    <img id="imagePreview" src="data:image/png;base64,<%=profilePictureBase64 %>" class="h-full w-full object-cover" alt="">
+                <% } %>
+                <input onchange="previewImage(this)" type="file" id="image" hidden name="profilePicture">
+            </label>
+            <div class="flex space-x-2">
+                <a href="/removeProfilePicture"><button type="button" id="removeBtn" class="p-1 h-10 rounded-md w-24 bg-red-700 text-white">Remove</button></a>
+                <input type="submit" class="p-1 h-10 rounded-md w-24 bg-blue-700 text-white" value="Change">
+            </div>
+        </form>
+    </div>
+
+    <% if (profilePictureBase64 === "") { %>
+        <h1 class="text-xl md:text-3xl flex gap-3">
+            <img class="h-8 w-8 mb-2 md:h-10 md:w-10 rounded-full" id="inputImage" src="/images/default_profile_pic.jpg" alt=""> 
+            <%= user.username %>, Hello 👋🏻 
+        </h1>
+    <% } else { %>
+        <h1 class="text-xl md:text-3xl flex gap-3">
+            <img class="h-8 w-8 mb-2 md:h-10 md:w-10 rounded-full" id="inputImage" src="data:image/png;base64,<%= profilePictureBase64 %>" alt=""> 
+            <%= user.username %>, Hello 👋🏻 
+        </h1>
+    <% } %>
+
+    <h3 class="opacity-60 mb-3 text-zinc-900 text-sm md:text-base">You have total <%= user.hisaabs.length %> records available.</h3>
+    <h3 class="opacity-70 mb-6 text-zinc-900 text-sm md:text-base">Total Expense - <%= user.total %> Rs.</h3>
+
+    <div class="flex flex-col md:flex-row justify-between px-5 mb-4 gap-2 md:mb-10">
+        <form class="flex flex-col  md:flex-row gap-2 w-full" action="/profile" method="get">
+            <button id="filterClick" class="px-4 py-2 flex items-center gap-4 font-medium text-sm text-zinc-500 bg-zinc-200 rounded-md h-10 w-full md:w-28">Filters <i class="ri-sound-module-fill"></i></button>
+            <div class="flex sm:flex-col md:flex-col md:w-full overflow-x-auto relative gap-2"> 
+                <div id="bydate" class="hidden flex md:flex-row w-full md:w-auto mt-2 md:mt-0 md:ml-4 gap-2 transition duration-[50ms] ease-linear">
+                    <div class="flex items-center gap-4 font-medium text-sm text-zinc-500 bg-zinc-200 rounded-md px-2 py-1">By Date<i class="ri-calendar-line"></i></div>
+                    <div id="filter" class="flex md:flex-row gap-2 transition duration-[50ms] ease-linear">
+                        <input class="bg-zinc-200 text-sm px-4 py-2 rounded-md w-full md:w-auto" name="startDate" type="date">
+                        <input class="bg-zinc-200 text-sm px-4 py-2 rounded-md w-full md:w-auto" name="endDate" type="date">
+                    </div>
+                    <select name="byDate" id="filter-first" class="w-full md:w-auto bg-zinc-200 text-sm outline-none px-3 py-1 rounded-md mt-2 md:mt-0 md:text-center">
+                        <option value="-1">Newest First</option>
+                        <option value="1">Oldest First</option>
+                    </select>
+                    <input id="filter-button" class="px-6 py-2 bg-blue-500 text-white rounded-md w-full md:w-auto mt-2 md:mt-0" type="submit" value="Filter">
+                </div>
+            </div>
+        </form>
+    
+        <div class="search-bar-container mt-4 md:mt-0">
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="w-full md:w-3/4" placeholder="Search...">
+                <button id="searchButton" type="submit"> <i class="ri-search-line"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scrollbar" class="flex flex-wrap bg-slate-300 min-h-auto max-h-[600px] overflow-y-auto rounded-lg p-5 gap-4 md:gap-12">
+        <% if(user.hisaabs.length > 0) { %>
+            <% for(var i = 0; i < user.hisaabs.length; i++) { %>
+                <div class="hisaab-item bg-zinc-100 p-3 px-5 rounded-md h-32 w-full md:w-[350px] ml-0 md:ml-8 mt-2 relative">
+                    <div class="flex gap-4 md:gap-10 items-center">
+                        <div class="flex justify-center gap-2 items-start">
+                            <% if(user.hisaabs[i].encrypted) { %>
+                                <div class="px-3 py-2 rounded-md flex gap-2 items-center bg-red-500 text-white">
+                                    <i class="text-xs ri-lock-2-line"></i>
+                                    <h3 class="text-sm">Encrypted</h3>
+                                </div>
+                            <% } else { %>
+                                <div class="px-3 py-2 rounded-md flex gap-2 items-center bg-teal-600 text-white">
+                                    <i class="text-xs ri-check-line"></i>
+                                    <h3 class="text-sm">Available</h3>
+                                </div>
+                            <% } %>
+                            <% if(user.hisaabs[i].shareable) { %>
+                                <div class="px-3 py-2 rounded-md bg-zinc-300/70 flex items-center justify-center">
+                                    <i class="text-sm ri-share-line"></i>
+                                </div>
+                            <% } %>
+                            <% if(user.hisaabs[i].important) { %>
+                                <div class="px-3 py-2 rounded-md bg-red-400 flex items-center justify-center text-white text-sm">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                            <% } %>
+                        </div>
+                        <h3 class="text-xs text-zinc-400 absolute right-4 bottom-2">
+                            Created on <%= new Date(user.hisaabs[i].createdAt).getDate() %>-<%= new Date(user.hisaabs[i].createdAt).getMonth() + 1 %>-<%= new Date(user.hisaabs[i].createdAt).getFullYear() %>
+                        </h3>
+                        <div class="px-3 py-1 rounded-md flex gap-2 items-center bg-zinc-300 text-zinc-900" ><%= user.hisaabs[i].total %> Rs</div>                          
+                    </div>
+                    <div class="mt-3">
+                        <h3 id="tittle" class="font-medium text-sm md:text-lg truncate "><%= user.hisaabs[i].title %></h3>
+                        <a class="text-zinc-400 text-xs md:text-sm hover:text-zinc-950" href="/hisaab/view/<%= user.hisaabs[i]._id %>">view expense</a>
+                    </div>
+                </div>
+            <% } %>
+        <% } else { %>
+            <h3 class="text-zinc-400 font-sans">No expenses found.</h3>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    document.querySelector("#filterClick").addEventListener("click", function(e) {
+        e.preventDefault();
+        const filter = document.querySelector("#filter");
+        const bydate = document.querySelector("#bydate");
+        const filterFirst = document.querySelector("#filter-first");
+        const filterButton = document.querySelector("#filter-button");
+
+        if (filter.classList.contains("hidden")) {
+            filter.classList.remove("hidden");
+            bydate.classList.remove("hidden");
+            filterFirst.classList.remove("hidden");
+            filterButton.classList.remove("hidden");
+        } else {
+            filter.classList.add("hidden");
+            bydate.classList.add("hidden");
+            filterFirst.classList.add("hidden");
+            filterButton.classList.add("hidden");
+        }
+    });
+
+    document.querySelector('#inputImage').addEventListener('click', function() {
+        const changePhotoSection = document.getElementById('changePhoto');
+        changePhotoSection.classList.remove('hidden');
+        changePhotoSection.classList.add('flex'); // Show as flex
+    });
+
+    document.getElementById('close').addEventListener('click', function() {
+        const changePhotoSection = document.getElementById('changePhoto');
+        changePhotoSection.classList.add('hidden');
+        changePhotoSection.classList.remove('flex'); // Remove flex when hiding
+    });
+
+    function previewImage(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function() {
+    const searchTerm = this.value.toLowerCase();
+    const hisaabItems = document.querySelectorAll(".hisaab-item");
+
+    hisaabItems.forEach(item => {
+        const title = item.querySelector("#tittle").innerText.toLowerCase();
+        
+        if (title.includes(searchTerm)) {
+            item.style.display = "block"; // Show matching items
+        } else {
+            item.style.display = "none"; // Hide non-matching items
+        }
+    });
+});
+
+
+
+</script>
+<%- include('./partials/footer.ejs') %>
